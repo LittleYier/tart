@@ -67,7 +67,9 @@ struct Set: AsyncParsableCommand {
       vmConfig.display.unit = display.unit
     }
 
-    vmConfig.displayRefit = displayRefit
+    if let displayRefit = displayRefit {
+      vmConfig.displayRefit = displayRefit
+    }
 
     if randomMAC {
       vmConfig.macAddress = VZMACAddress.randomLocallyAdministered()
