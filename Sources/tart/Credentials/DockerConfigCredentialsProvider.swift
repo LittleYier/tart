@@ -104,13 +104,13 @@ struct DockerAuthConfig: Codable {
     guard let data = Data(base64Encoded: authBase64) else {
       return nil
     }
-    guard let components = String(data: data, encoding: .utf8)?.components(separatedBy: ":") else {
+    guard let components = String(data: data, encoding: .utf8)?.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false) else {
       return nil
     }
     if components.count != 2 {
       return nil
     }
-    return (components[0], components[1])
+    return (String(components[0]), String(components[1]))
   }
 }
 
