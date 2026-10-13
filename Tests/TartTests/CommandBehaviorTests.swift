@@ -206,6 +206,22 @@ final class CommandBehaviorTests: XCTestCase {
     }
   }
 
+  func testSetPreservesDisplayRefitWhenChangingOtherOptions() async throws {
+    try await withTemporaryTartHome {
+      let vmDir = try makeStandaloneVM(named: "display-refit", diskContents: "disk")
+      var vmConfig = try VMConfig(fromURL: vmDir.configURL)
+      vmConfig.displayRefit = false
+      try vmConfig.save(toURL: vmDir.configURL)
+
+      let command = try Set.parseAsRoot(["display-refit", "--cpu", "4"]) as! Set
+      try await command.run()
+
+      let updatedConfig = try VMConfig(fromURL: vmDir.configURL)
+      XCTAssertEqual(updatedConfig.displayRefit, false)
+      XCTAssertEqual(updatedConfig.cpuCount, 4)
+    }
+  }
+
   func testRemoteAdditionalDiskRetainsTemporaryBackingFileLock() throws {
     try withTemporaryTartHome {
       let storage = try VMStorageOCI()
