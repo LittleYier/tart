@@ -101,7 +101,7 @@ struct Set: AsyncParsableCommand {
     if let disk = disk {
       let temporaryDiskURL = try Config().tartTmpDir.appendingPathComponent("set-disk-\(UUID().uuidString)")
 
-      try FileManager.default.copyItem(atPath: disk, toPath: temporaryDiskURL.path())
+      try FileManager.default.copyItem(atPath: disk, toPath: temporaryDiskURL.path(percentEncoded: false))
 
       _ = try FileManager.default.replaceItemAt(vmDir.diskURL, withItemAt: temporaryDiskURL)
     }

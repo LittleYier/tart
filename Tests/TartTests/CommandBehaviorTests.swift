@@ -245,6 +245,22 @@ final class CommandBehaviorTests: XCTestCase {
     }
   }
 
+  func testSetDiskReplacesDiskWhenTartHomeContainsSpaces() async throws {
+    let home = try temporaryDirectory().appendingPathComponent("Tart Home", isDirectory: true)
+    let previousHome = ProcessInfo.processInfo.environment["TART_HOME"]
+    setenv("TART_HOME", home.path, 1)
+    defer { restoreEnvironment("TART_HOME", to: previousHome) }
+
+    let vmDir = try makeStandaloneVM(named: "spaces", diskContents: "disk")
+    let replacementURL = try temporaryDirectory().appendingPathComponent("replacement.img")
+    XCTAssertTrue(FileManager.default.createFile(atPath: replacementURL.path, contents: Data("replacement".utf8)))
+
+    let command = try Set.parseAsRoot(["spaces", "--disk", replacementURL.path]) as! Set
+    try await command.run()
+
+    XCTAssertEqual(try Data(contentsOf: vmDir.diskURL), Data("replacement".utf8))
+  }
+
   func testSetPreservesDisplayRefitWhenChangingOtherOptions() async throws {
     try await withTemporaryTartHome {
       let vmDir = try makeStandaloneVM(named: "display-refit", diskContents: "disk")
