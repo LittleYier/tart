@@ -23,6 +23,20 @@ final class WWWAuthenticateTests: XCTestCase {
     XCTAssertEqual(["a": "b", "c": "d"], wwwAuthenticate.kvs)
   }
 
+  func testWhitespaceAroundDirectives() throws {
+    // RFC 7235 allows optional whitespace around the commas separating directives[1]
+    //
+    // [1]: https://www.rfc-editor.org/rfc/rfc7235#section-4.1
+    let wwwAuthenticate = try WWWAuthenticate(rawHeaderValue: "Bearer realm=\"https://auth.example.com/token\", service=\"registry.example.com\" , scope=\"repository:org/repo:pull,push\"")
+
+    XCTAssertEqual("Bearer", wwwAuthenticate.scheme)
+    XCTAssertEqual([
+      "realm": "https://auth.example.com/token",
+      "service": "registry.example.com",
+      "scope": "repository:org/repo:pull,push",
+    ], wwwAuthenticate.kvs)
+  }
+
   func testIncompleteHeader() throws {
     XCTAssertThrowsError(try WWWAuthenticate(rawHeaderValue: "Whatever")) {
       XCTAssertTrue($0 is RegistryError)

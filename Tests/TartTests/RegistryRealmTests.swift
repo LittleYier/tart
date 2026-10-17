@@ -20,6 +20,10 @@ final class RegistryRealmTests: XCTestCase {
     try await checkAuthentication(mode: "encoded")
   }
 
+  func testChallengeWithSpacesAfterCommas() async throws {
+    try await checkAuthentication(mode: "spaced")
+  }
+
   private func checkAuthentication(mode: String) async throws {
     let server = try RealmTokenServer(mode: mode)
     defer { server.stop() }
@@ -83,7 +87,7 @@ private final class RealmTokenServer {
         if !request.lowercased().contains("authorization: bearer test-token\r\n") {
           let query: String
           switch self.mode {
-          case "plain": query = ""
+          case "plain", "spaced": query = ""
           case "encoded": query = "?tenant=alpha%2Bbeta&escape=%7e%2f&mode=one&mode=two&empty="
           default: query = "?tenant=alpha%26beta&mode=one&mode=two&empty="
           }
@@ -91,7 +95,8 @@ private final class RealmTokenServer {
             (self.mode == "encoded" ? "&sc%6Fpe=old&service=old" : "")
           let realm = "http://127.0.0.1:\(self.listener.port!.rawValue)/token\(query)\(stale)"
           status = "401 Unauthorized"
-          extraHeaders = "WWW-Authenticate: Bearer realm=\"\(realm)\",service=\"registry\",scope=\"repository:org/repo:pull\"\r\n"
+          let separator = self.mode == "spaced" ? ", " : ","
+          extraHeaders = "WWW-Authenticate: Bearer realm=\"\(realm)\"\(separator)service=\"registry\"\(separator)scope=\"repository:org/repo:pull\"\r\n"
         }
       } else if url.path == "/token" {
         let receivedURL = URLComponents(url: url, resolvingAgainstBaseURL: false)!
@@ -102,7 +107,7 @@ private final class RealmTokenServer {
           values("tenant") == ["alpha+beta"] && values("escape") == ["~/"]
         let normalValid = values("tenant") == ["alpha&beta"]
         let valid = values("service") == ["registry"] && values("scope") == ["repository:org/repo:pull"] &&
-          (self.mode == "plain" || ((self.mode == "encoded" ? encodedValid : normalValid) &&
+          (self.mode == "plain" || self.mode == "spaced" || ((self.mode == "encoded" ? encodedValid : normalValid) &&
               values("mode") == ["one", "two"] && values("empty") == [""]))
         status = valid ? "200 OK" : "400 Bad Request"
         body = valid ? "{\"token\":\"test-token\"}" : "{\"error\":\"missing or changed realm parameters\"}"

@@ -27,8 +27,11 @@ class WWWAuthenticate {
           + "key=value or key=\"value\"")
       }
 
-      let key = String(parts[0])
-      var value = String(parts[1])
+      // Directives can be surrounded by optional whitespace[1]
+      //
+      // [1]: https://www.rfc-editor.org/rfc/rfc7235#section-4.1
+      let key = parts[0].trimmingCharacters(in: .whitespaces)
+      var value = parts[1].trimmingCharacters(in: .whitespaces)
       value = value.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
 
       kvs[key] = value
