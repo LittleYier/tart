@@ -356,7 +356,7 @@ struct Run: AsyncParsableCommand {
     }
 
     if (noGraphics || vnc || vncExperimental) && captureSystemKeys {
-      throw ValidationError("--captures-system-keys can only be used with the default VM view")
+      throw ValidationError("--capture-system-keys can only be used with the default VM view")
     }
 
     if nested {
