@@ -16,7 +16,7 @@ struct Suspend: AsyncParsableCommand {
     // Find the VM's PID
     let pid = try lock.pid()
     if pid == 0 {
-      throw RuntimeError.VMNotRunning("VM \"\(name)\" is not running")
+      throw RuntimeError.VMNotRunning(name)
     }
 
     // Tell the "tart run" process to suspend the VM
