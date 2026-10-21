@@ -138,6 +138,12 @@ final class CommandBehaviorTests: XCTestCase {
     }
   }
 
+  func testPushRejectsInvalidConcurrencyAndChunkSize() {
+    XCTAssertThrowsError(try Push.parse(["vm", "example.com/org/vm:latest", "--concurrency", "0"]))
+    XCTAssertThrowsError(try Push.parse(["vm", "example.com/org/vm:latest", "--chunk-size=-1"]))
+    XCTAssertNoThrow(try Push.parse(["vm", "example.com/org/vm:latest", "--chunk-size", "0"]))
+  }
+
   func testStandaloneDeleteDoesNotInitializeContentStore() throws {
     try withTemporaryTartHome {
       let vmDir = try VMStorageLocal().create("standalone")

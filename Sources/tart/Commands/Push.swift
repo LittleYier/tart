@@ -35,6 +35,16 @@ struct Push: AsyncParsableCommand {
                            discussion: "Increases disk usage, but saves time if you're going to pull the pushed images later."))
   var populateCache: Bool = false
 
+  func validate() throws {
+    if concurrency < 1 {
+      throw ValidationError("network concurrency cannot be less than 1")
+    }
+
+    if chunkSize < 0 {
+      throw ValidationError("chunk size cannot be negative")
+    }
+  }
+
   func run() async throws {
     let ociStorage = try VMStorageOCI()
     let localVMDir = try VMStorageHelper.open(localName)
