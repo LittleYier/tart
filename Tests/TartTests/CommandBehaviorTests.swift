@@ -144,6 +144,11 @@ final class CommandBehaviorTests: XCTestCase {
     XCTAssertNoThrow(try Push.parse(["vm", "example.com/org/vm:latest", "--chunk-size", "0"]))
   }
 
+  func testCreateRejectsRemoteName() {
+    XCTAssertThrowsError(try Create.parse(["org/vm", "--linux"]))
+    XCTAssertNoThrow(try Create.parse(["vm", "--linux"]))
+  }
+
   func testStandaloneDeleteDoesNotInitializeContentStore() throws {
     try withTemporaryTartHome {
       let vmDir = try VMStorageLocal().create("standalone")
