@@ -752,7 +752,7 @@ struct Run: AsyncParsableCommand {
           interface.identifier == name || interface.localizedDisplayName == name
         }
         if (interface == nil) {
-          throw ValidationError("no bridge interfaces matched \"\(netBridged)\", "
+          throw ValidationError("no bridge interfaces matched \"\(name)\", "
             + "available interfaces: \(bridgeInterfaces())")
         }
         return interface!
