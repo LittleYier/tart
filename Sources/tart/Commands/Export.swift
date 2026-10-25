@@ -16,7 +16,7 @@ struct Export: AsyncParsableCommand {
     if let path = path {
       correctedPath = path
     } else {
-      correctedPath = "\(name).tvm"
+      correctedPath = "\(NSString(string: name).lastPathComponent).tvm"
 
       if FileManager.default.fileExists(atPath: correctedPath) {
         while true {

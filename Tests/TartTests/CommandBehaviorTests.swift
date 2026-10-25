@@ -172,6 +172,24 @@ final class CommandBehaviorTests: XCTestCase {
     XCTAssertFalse(RuntimeError.VMIsRunning("running").isFileNotFound())
   }
 
+  func testExportDerivesDefaultPathFromRemoteName() async throws {
+    try await withTemporaryTartHome {
+      let vmDir = try VMStorageOCI().create(try RemoteName("example.com/org/vm:latest"))
+      try config().save(toURL: vmDir.configURL)
+      XCTAssertTrue(FileManager.default.createFile(atPath: vmDir.nvramURL.path, contents: Data()))
+      XCTAssertTrue(FileManager.default.createFile(atPath: vmDir.diskURL.path, contents: Data()))
+
+      let workingDirectory = try temporaryDirectory()
+      let previousDirectory = FileManager.default.currentDirectoryPath
+      FileManager.default.changeCurrentDirectoryPath(workingDirectory.path)
+      defer { FileManager.default.changeCurrentDirectoryPath(previousDirectory) }
+
+      try await Export.parse(["example.com/org/vm:latest"]).run()
+
+      XCTAssertTrue(FileManager.default.fileExists(atPath: workingDirectory.appendingPathComponent("vm:latest.tvm").path))
+    }
+  }
+
   func testCloneRejectsExistingDestinationUnlessOverwriteIsRequested() async throws {
     try await withTemporaryTartHome {
       let source = try makeStandaloneVM(named: "source", diskContents: "source")
