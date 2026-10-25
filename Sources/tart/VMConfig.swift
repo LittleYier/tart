@@ -133,7 +133,7 @@ struct VMConfig: Codable {
     let encodedMacAddress = try container.decode(String.self, forKey: .macAddress)
     guard let macAddress = VZMACAddress.init(string: encodedMacAddress) else {
       throw DecodingError.dataCorruptedError(
-        forKey: .hardwareModel,
+        forKey: .macAddress,
         in: container,
         debugDescription: "failed to initialize VZMacAddress using the provided value")
     }

@@ -67,4 +67,18 @@ final class VMConfigTests: XCTestCase {
 
     XCTAssertNil(decodedLinux.machineIdentifier, "missing machineIdentifier should be decoded as nil")
   }
+
+  func testInvalidMACAddressIsReportedUnderMACAddressKey() throws {
+    let config = VMConfig(platform: Linux(), cpuCountMin: 2, memorySizeMin: 1024 * 1024 * 1024)
+    var configJSONObject = try XCTUnwrap(JSONSerialization.jsonObject(with: try config.toJSON()) as? [String: Any])
+    configJSONObject["macAddress"] = "not-a-mac-address"
+    let configData = try JSONSerialization.data(withJSONObject: configJSONObject)
+
+    XCTAssertThrowsError(try VMConfig(fromJSON: configData)) { error in
+      guard case DecodingError.dataCorrupted(let context) = error else {
+        return XCTFail("unexpected error: \(error)")
+      }
+      XCTAssertEqual(context.codingPath.last?.stringValue, "macAddress")
+    }
+  }
 }
