@@ -50,6 +50,7 @@ class VM: NSObject, VZVirtualMachineDelegate, ObservableObject {
        audio: Bool = true,
        clipboard: Bool = true,
        noUSBAccessories: Bool = false,
+       readOnly: Bool = false,
        sync: VZDiskImageSynchronizationMode = .full,
        caching: VZDiskImageCachingMode? = nil,
        noTrackpad: Bool = false,
@@ -75,6 +76,7 @@ class VM: NSObject, VZVirtualMachineDelegate, ObservableObject {
                                                 audio: audio,
                                                 clipboard: clipboard,
                                                 noUSBAccessories: noUSBAccessories,
+                                                readOnly: readOnly,
                                                 sync: sync,
                                                 caching: caching,
                                                 noTrackpad: noTrackpad,
@@ -327,6 +329,7 @@ class VM: NSObject, VZVirtualMachineDelegate, ObservableObject {
     audio: Bool = true,
     clipboard: Bool = true,
     noUSBAccessories: Bool = false,
+    readOnly: Bool = false,
     sync: VZDiskImageSynchronizationMode = .full,
     caching: VZDiskImageCachingMode? = nil,
     noTrackpad: Bool = false,
@@ -405,14 +408,14 @@ class VM: NSObject, VZVirtualMachineDelegate, ObservableObject {
     let attachment: VZStorageDeviceAttachment
     if vmDir.isStackedVM {
       attachment = try vmDir.diskImageStack().makeAttachment(
-        readOnly: false,
+        readOnly: readOnly,
         cachingMode: cachingMode,
         synchronizationMode: sync
       )
     } else {
       attachment = try VZDiskImageStorageDeviceAttachment(
         url: vmDir.diskURL,
-        readOnly: false,
+        readOnly: readOnly,
         cachingMode: cachingMode,
         synchronizationMode: sync
       )

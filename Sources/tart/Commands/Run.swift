@@ -510,6 +510,7 @@ struct Run: AsyncParsableCommand {
       audio: !noAudio,
       clipboard: !noClipboard,
       noUSBAccessories: noUSBAccessories,
+      readOnly: diskOptions.readOnly,
       sync: VZDiskImageSynchronizationMode(diskOptions.syncModeRaw),
       caching: VZDiskImageCachingMode(diskOptions.cachingModeRaw),
       noTrackpad: noTrackpad,
