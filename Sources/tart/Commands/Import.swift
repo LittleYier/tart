@@ -10,6 +10,9 @@ struct Import: AsyncParsableCommand {
   @Argument(help: "Destination VM name.", completion: .custom(completeLocalMachines))
   var name: String
 
+  @Flag(help: "overwrite an existing local VM")
+  var overwrite: Bool = false
+
   func validate() throws {
     if name.contains("/") {
       throw ValidationError("<name> should be a local name")
@@ -18,6 +21,8 @@ struct Import: AsyncParsableCommand {
 
   func run() async throws {
     let localStorage = try VMStorageLocal()
+
+    try rejectExistingDestination(localStorage)
 
     // Create a temporary VM directory to which we will load the export file
     let tmpVMDir = try VMDirectory.temporary()
@@ -42,6 +47,8 @@ struct Import: AsyncParsableCommand {
       let lock = try FileLock(lockURL: Config().tartHomeDir)
       try lock.lock()
 
+      try rejectExistingDestination(localStorage)
+
       // Re-generate the VM's MAC address importing it will result in address collision
       if try localStorage.hasVMsWithMACAddress(macAddress: tmpVMDir.macAddress()) {
         try tmpVMDir.regenerateMACAddress()
@@ -53,5 +60,12 @@ struct Import: AsyncParsableCommand {
     }, onCancel: {
       try? tmpVMDir.removeFromDisk()
     })
+  }
+
+  private func rejectExistingDestination(_ localStorage: VMStorageLocal) throws {
+    let destinationURL = localStorage.baseURL.appendingPathComponent(name, isDirectory: true)
+    if !overwrite && FileManager.default.fileExists(atPath: destinationURL.path) {
+      throw ValidationError("VM \"\(name)\" already exists, use --overwrite to replace it")
+    }
   }
 }

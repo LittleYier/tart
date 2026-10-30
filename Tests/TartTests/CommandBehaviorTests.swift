@@ -196,6 +196,31 @@ final class CommandBehaviorTests: XCTestCase {
     }
   }
 
+  func testImportRejectsExistingDestinationUnlessOverwriteIsRequested() async throws {
+    try await withTemporaryTartHome {
+      let source = try makeStandaloneVM(named: "source", diskContents: "source")
+      let destination = try makeStandaloneVM(named: "destination", diskContents: "existing")
+      let archiveURL = try temporaryDirectory().appendingPathComponent("source.tvm")
+      try source.exportToArchive(path: archiveURL.path)
+
+      let command = try Import.parseAsRoot([archiveURL.path, "destination"]) as! Import
+
+      do {
+        try await command.run()
+        XCTFail("expected importing over an existing VM to be rejected")
+      } catch let error as ValidationError {
+        XCTAssertEqual(error.message, "VM \"destination\" already exists, use --overwrite to replace it")
+      }
+
+      XCTAssertEqual(try Data(contentsOf: destination.diskURL), Data("existing".utf8))
+
+      let overwriteCommand = try Import.parseAsRoot(["--overwrite", archiveURL.path, "destination"]) as! Import
+      try await overwriteCommand.run()
+
+      XCTAssertEqual(try Data(contentsOf: destination.diskURL), Data("source".utf8))
+    }
+  }
+
   func testClonePreservesIncompleteDestination() async throws {
     try await withTemporaryTartHome {
       _ = try makeStandaloneVM(named: "source", diskContents: "source")
