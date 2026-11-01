@@ -67,7 +67,7 @@ final class RegistryHostTests: XCTestCase {
   }
 
   func testImproperlyFormattedHost() throws {
-    for host in ["https://ghcr.io", "http://127.0.0.1:5000"] {
+    for host in ["https://ghcr.io", "http://127.0.0.1:5000", "HTTPS://ghcr.io"] {
       XCTAssertThrowsError(try Registry(host: host, namespace: "org/repo")) { error in
         XCTAssertEqual("\(error)", "improperly formatted host \"\(host)\" was provided, make sure that it doesn't start with http:// or https://")
       }

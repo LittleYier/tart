@@ -143,12 +143,14 @@ class Registry {
   ) throws {
     let proto = insecure ? "http" : "https"
     // "https://ghcr.io" would still parse, as a URL with "https" as its host
-    guard !host.hasPrefix("http://") && !host.hasPrefix("https://"),
+    let lowercasedHost = host.lowercased()
+    let hasScheme = lowercasedHost.hasPrefix("http://") || lowercasedHost.hasPrefix("https://")
+    guard !hasScheme,
           var baseURLComponents = URLComponents(string: proto + "://" + host + "/v2/"),
           var baseURL = baseURLComponents.url else {
       var hint = ""
 
-      if host.hasPrefix("http://") || host.hasPrefix("https://") {
+      if hasScheme {
         hint += ", make sure that it doesn't start with http:// or https://"
       }
 
